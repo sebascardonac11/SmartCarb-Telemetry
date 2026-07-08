@@ -1,18 +1,47 @@
 # SmartCarb-Telemetry
 ESP32-S3 based engine tuning telemetry system for real-time AFR (Lambda), EGT, CHT, and TPS monitoring. Designed for carburetor calibration and ice-cool engine diagnostics.
 
-Es un sistema de telemetría de código abierto basado en el ESP32-S3 diseñado específicamente para la puesta a punto de motores carburados de alto rendimiento. 
-Al cruzar los datos de apertura del acelerador con la riqueza de la mezcla y las temperaturas críticas de escape y culata, el dispositivo permite mapear con precisión quirúrgica el comportamiento del motor en cada circuito.
 
-Variables Monitoreadas
-Sensor  Parámetro  Propósito en la Carburación
-Sonda Lambda Wideband  Mezcla Aire/Combustible (AFR)  Saber con exactitud si el motor va rico o pobre en tiempo real.
-TPS (Potenciómetro)  Posición del Acelerador (%)Identificar qué circuito del carburador está actuando (bajas, medias o altas).
-EGT (Termopar K)Temperatura de Gases de EscapeDetectar detonación inminente o exceso de avance/retraso de encendido.
-CHT (Termopar/NTC)Temperatura de CulataMonitorear el estrés térmico general del cilindro.
+# CarbTune-ESP32
 
-Características Principales
-Muestreo de Alta Velocidad: Lectura y correlación instantánea entre la posición del TPS y el valor Lambda.
-Alertas Térmicas: LEDs de advertencia configurables si la EGT o la CHT superan los límites de seguridad.
-Diseño Modular: Desarrollado en PlatformIO utilizando una arquitectura orientada a objetos para facilitar la adición de pantallas (OLED/TFT) o almacenamiento SD.
-Conectividad: Preparado para transmitir datos vía Wi-Fi/Bluetooth a una interfaz gráfica o enlazarse con el Laptimer principal.
+![PlatformIO](https://img.shields.io/badge/PlatformIO-Compatible-orange.svg)
+![Framework](https://img.shields.io/badge/Framework-Arduino__ESP32--S3-green.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+Sistema de telemetría y diagnóstico de bajo costo basado en el **ESP32-S3** para la puesta a punto y carburación de motores de alto rendimiento. Este dispositivo permite monitorear y correlacionar en tiempo real la apertura del acelerador (TPS) con el estado estequiométrico de la mezcla (Sonda Lambda Narrowband) y las temperaturas críticas de escape (EGT) y culata (CHT).
+
+---
+
+## 📊 Variables Monitoreadas y Sensores
+
+| Parámetro | Sensor | Rango / Tipo | Propósito en la Carburación |
+| :--- | :--- | :--- | :--- |
+| **Mezcla (AFR)** | Sonda Lambda Narrowband | 0V - 1V (Analógico) | Identificar de forma cualitativa si el motor va **Rico** (>0.5V) o **Pobre** (<0.5V). |
+| **Acelerador (TPS)** | Potenciómetro original o adaptado | 0% - 100% (Analógico) | Determinar exactamente qué circuito del carburador está actuando (bajas, medias o altas). |
+| **Escape (EGT)** | Termopar Tipo K + MAX31855 | Hasta 1000 °C (SPI) | Detectar temperaturas excesivas por mezcla pobre o problemas de avance de encendido. |
+| **Culata (CHT)** | Termopar Tipo K o Sensor NTC | Hasta 300 °C | Monitorear el estrés térmico general del cilindro y evitar agarrotamientos. |
+
+---
+
+## 🛠️ Características Principales
+
+* **Filtraje Analógico:** Implementación de sobremuestreo (Oversampling) y filtros de media móvil en el ESP32-S3 para estabilizar las lecturas analógicas del TPS y la sonda Lambda.
+* **Correlación TPS-Lambda:** Mapeo lógico para identificar si las fluctuaciones de la mezcla ocurren al abrir gas a fondo (circuito de alta/chiclé principal) o en ralentí/progresión.
+* **Alertas Visuales:** Salidas digitales configurables para LEDs de advertencia en caso de picos peligrosos de EGT o CHT.
+* **Arquitectura No Bloqueante:** Diseñado sobre PlatformIO estructurando el código de manera limpia para mantener un muestreo rápido sin interferir con la comunicación o pantallas.
+
+---
+
+## 📁 Estructura del Proyecto
+
+```text
+├── include/
+│   ├── Config.h         # Definición de pines (GPIO), calibración analógica y umbrales
+│   └── Filters.h        # Algoritmos de filtrado para señales analógicas ruidosas
+├── lib/
+│   ├── Max31855_EGT/    # Librería/Clase para la lectura del termopar de escape vía SPI
+│   ├── Lambda_NB/       # Lógica de conversión de Voltaje a Estado (Rico/Estequiométrico/Pobre)
+│   └── TPS_Calibrate/   # Rutina de calibración para el mapeo de 0% a 100% del acelerador
+└── src/
+    └── main.cpp         # Inicialización de periféricos y ciclo principal de telemetría
+
