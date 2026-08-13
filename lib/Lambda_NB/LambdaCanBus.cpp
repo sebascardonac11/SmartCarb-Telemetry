@@ -1,8 +1,8 @@
 #include "LambdaCanBus.h"
 #include "driver/twai.h"
 
-LambdaCanBus::LambdaCanBus(int txPin, int rxPin, uint32_t canId)
-    : _txPin(txPin), _rxPin(rxPin), _canId(canId)
+LambdaCanBus::LambdaCanBus(int txPin, int rxPin, uint32_t lambdaCanId, uint32_t chtCanId)
+    : _txPin(txPin), _rxPin(rxPin), _lambdaCanId(lambdaCanId), _chtCanId(chtCanId)
 {
     _mutex = xSemaphoreCreateMutex();
 }
@@ -38,7 +38,7 @@ void LambdaCanBus::sendFrame(const LambdaCanFrame &frame)
     uint16_t mv = (uint16_t)(frame.voltage * 1000.0f);
 
     twai_message_t message = {};
-    message.identifier = _canId;
+    message.identifier = _lambdaCanId;
     message.flags = TWAI_MSG_FLAG_NONE;
     message.data_length_code = 6;
     message.data[0] = (uint8_t)(mv >> 8);
@@ -51,6 +51,37 @@ void LambdaCanBus::sendFrame(const LambdaCanFrame &frame)
     if (twai_transmit(&message, pdMS_TO_TICKS(10)) != ESP_OK)
     {
         Serial.println("[CAN] Error al enviar frame de lambda");
+    }
+
+    sendChtFrame(frame);
+}
+
+/**
+ * Reproduce exactamente el formato de arduino/datalogger/src/main.cpp
+ * (canSend()) en Telemetria, para que AimCanBus en el ESP32 principal la
+ * reciba sin ningun cambio: RPM/Marcha/TPS en 0 (este nodo no los mide) y
+ * CHT×10 en bytes 4-5.
+ */
+void LambdaCanBus::sendChtFrame(const LambdaCanFrame &frame)
+{
+    if (!frame.chtOk) return;
+
+    int16_t chtRaw = (int16_t)(frame.cht * 10.0f);
+
+    twai_message_t message = {};
+    message.identifier = _chtCanId;
+    message.flags = TWAI_MSG_FLAG_NONE;
+    message.data_length_code = 6;
+    message.data[0] = 0; // RPM bajo
+    message.data[1] = 0; // RPM alto
+    message.data[2] = 0; // Marcha
+    message.data[3] = 0; // TPS
+    message.data[4] = (uint8_t)(chtRaw & 0xFF);
+    message.data[5] = (uint8_t)(chtRaw >> 8);
+
+    if (twai_transmit(&message, pdMS_TO_TICKS(10)) != ESP_OK)
+    {
+        Serial.println("[CAN] Error al enviar frame de CHT");
     }
 }
 

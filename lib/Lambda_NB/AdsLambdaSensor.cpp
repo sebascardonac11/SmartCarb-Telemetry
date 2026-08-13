@@ -1,28 +1,7 @@
 #include "AdsLambdaSensor.h"
 
-AdsLambdaSensor::AdsLambdaSensor(uint8_t i2cAddress)
-    : _i2cAddress(i2cAddress) {}
-
-/**
- * Inicializa el ADS1115 en el bus I2C indicado (SDA=5 SCL=6, ver Config.h).
- * Ganancia GAIN_ONE => rango +-4.096V, ~0.125mV/bit, suficiente resolucion
- * para la señal 0-1V de la sonda narrowband ya amplificada/filtrada.
- */
-bool AdsLambdaSensor::begin(TwoWire &wire)
-{
-    _available = _ads.begin(_i2cAddress, &wire);
-    if (_available)
-    {
-        _ads.setGain(GAIN_ONE);
-        _status = -1;
-    }
-    else
-    {
-        _status = -2;
-        Serial.println("[Lambda] ADS1115 no responde en el bus I2C");
-    }
-    return _available;
-}
+AdsLambdaSensor::AdsLambdaSensor(Ads1115Bus &bus, uint8_t channel)
+    : _bus(bus), _channel(channel) {}
 
 /**
  * Intenta una lectura de verificacion. Igual que TemperatureNTC::probe(),
@@ -30,7 +9,7 @@ bool AdsLambdaSensor::begin(TwoWire &wire)
  */
 bool AdsLambdaSensor::probe()
 {
-    if (!_available) return false;
+    if (!_bus.isAvailable()) return false;
 
     bool ok = false;
     for (uint8_t attempt = 0; attempt < 3 && !ok; attempt++)
@@ -50,7 +29,7 @@ bool AdsLambdaSensor::probe()
  */
 float AdsLambdaSensor::readVoltage()
 {
-    if (!_available)
+    if (!_bus.isAvailable())
     {
         _status = -2;
         return -2.0f;
@@ -59,10 +38,10 @@ float AdsLambdaSensor::readVoltage()
     int32_t acc = 0;
     for (uint8_t i = 0; i < OVERSAMPLE_COUNT; i++)
     {
-        acc += _ads.readADC_SingleEnded(0);
+        acc += _bus.driver().readADC_SingleEnded(_channel);
     }
     float rawAvg     = (float)acc / OVERSAMPLE_COUNT;
-    float voltageNow = _ads.computeVolts((int16_t)rawAvg);
+    float voltageNow = _bus.driver().computeVolts((int16_t)rawAvg);
 
     _samples[_sampleIndex] = voltageNow;
     _sampleIndex = (_sampleIndex + 1) % MOVING_AVG_WINDOW;
