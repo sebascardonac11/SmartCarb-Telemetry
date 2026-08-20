@@ -20,6 +20,9 @@ constexpr float NTC_R25_OHM     = 10000.0f; // resistencia nominal a 25 °C
 constexpr float NTC_BETA        = 3950.0f;  // coeficiente Beta (25/85 °C)
 
 // ── TWAI / CAN bus ──────────────────────────────────────────────────────────
+// En false mientras se pone a punto el ADS1115: evita saturar el monitor
+// serie con errores de transmision (no hay otro nodo en el bus para el ACK).
+constexpr bool CAN_BUS_ENABLED = false;
 constexpr int      TWAI_TX_PIN        = 47;
 constexpr int      TWAI_RX_PIN        = 48;
 // ID propio para este nodo (sonda lambda narrowband + calentador). No colisiona
