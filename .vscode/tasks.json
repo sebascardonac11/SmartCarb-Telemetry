@@ -1,0 +1,44 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "PlatformIO: Build",
+            "type": "shell",
+            "command": "${env:HOME}/.platformio/penv/bin/pio run",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "PlatformIO: Upload",
+            "type": "shell",
+            "command": "${env:HOME}/.platformio/penv/bin/pio run --target upload",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "PlatformIO: Build and Upload",
+            "type": "shell",
+            "command": "${env:HOME}/.platformio/penv/bin/pio run --target upload",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "PlatformIO: Monitor",
+            "type": "shell",
+            "command": "${env:HOME}/.platformio/penv/bin/pio device monitor",
+            "group": "test",
+            "problemMatcher": [],
+            "isBackground": true
+        },
+        {
+            "label": "PlatformIO: Clean",
+            "type": "shell",
+            "command": "${env:HOME}/.platformio/penv/bin/pio run --target clean",
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}
