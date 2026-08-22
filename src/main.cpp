@@ -14,7 +14,7 @@ AdsChtSensor    chtSensor(adsBus, ADS1115_CH_CHT);
 
 LambdaHeaterControl heater(LAMBDA_HEATER_PWM_PIN);
 
-LambdaCanBus canBus(TWAI_TX_PIN, TWAI_RX_PIN, CAN_LAMBDA_MSG_ID, CAN_CHT_MSG_ID);
+LambdaCanBus canBus(TWAI_TX_PIN, TWAI_RX_PIN, CAN_LAMBDA_MSG_ID, CAN_CHT_MSG_ID, CAN_NO_ACK_MODE);
 
 constexpr unsigned long SERIAL_PRINT_PERIOD_MS = 500; // 2 Hz, para no saturar el puerto
 unsigned long lastSerialPrintMs = 0;

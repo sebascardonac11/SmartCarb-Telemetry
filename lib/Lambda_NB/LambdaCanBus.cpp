@@ -1,16 +1,17 @@
 #include "LambdaCanBus.h"
 #include "driver/twai.h"
 
-LambdaCanBus::LambdaCanBus(int txPin, int rxPin, uint32_t lambdaCanId, uint32_t chtCanId)
-    : _txPin(txPin), _rxPin(rxPin), _lambdaCanId(lambdaCanId), _chtCanId(chtCanId)
+LambdaCanBus::LambdaCanBus(int txPin, int rxPin, uint32_t lambdaCanId, uint32_t chtCanId, bool noAckMode)
+    : _txPin(txPin), _rxPin(rxPin), _lambdaCanId(lambdaCanId), _chtCanId(chtCanId), _noAckMode(noAckMode)
 {
     _mutex = xSemaphoreCreateMutex();
 }
 
 void LambdaCanBus::begin()
 {
+    twai_mode_t mode = _noAckMode ? TWAI_MODE_NO_ACK : TWAI_MODE_NORMAL;
     twai_general_config_t g_config =
-        TWAI_GENERAL_CONFIG_DEFAULT((gpio_num_t)_txPin, (gpio_num_t)_rxPin, TWAI_MODE_NORMAL);
+        TWAI_GENERAL_CONFIG_DEFAULT((gpio_num_t)_txPin, (gpio_num_t)_rxPin, mode);
     twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
     twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
 

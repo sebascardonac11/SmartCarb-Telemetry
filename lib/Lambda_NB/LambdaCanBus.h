@@ -46,7 +46,10 @@ struct LambdaCanFrame
 class LambdaCanBus
 {
 public:
-    LambdaCanBus(int txPin, int rxPin, uint32_t lambdaCanId, uint32_t chtCanId);
+    // noAckMode: usa TWAI_MODE_NO_ACK en vez de TWAI_MODE_NORMAL, para poder
+    // probar la transmision en el banco sin un segundo nodo que confirme
+    // (ACK) cada trama. Desactivar (false) cuando el bus tenga un receptor real.
+    LambdaCanBus(int txPin, int rxPin, uint32_t lambdaCanId, uint32_t chtCanId, bool noAckMode = false);
 
     void begin();
     void sendFrame(const LambdaCanFrame &frame);
@@ -65,6 +68,7 @@ private:
     uint32_t _lambdaCanId;
     uint32_t _chtCanId;
     uint32_t _periodMs = 100;
+    bool     _noAckMode;
 
     LambdaCanFrame     _sharedFrame;
     SemaphoreHandle_t  _mutex;
