@@ -3,8 +3,8 @@
 #include <Arduino.h>
 
 // ── I2C — ADS1115 compartido (sonda lambda + NTC de culata) ────────────────
-constexpr int     I2C_SDA_PIN      = 5;
-constexpr int     I2C_SCL_PIN      = 6;
+constexpr int     I2C_SDA_PIN      = 6;
+constexpr int     I2C_SCL_PIN      = 5;
 constexpr uint8_t ADS1115_I2C_ADDR = 0x48; // ADDR a GND (direccion por defecto)
 
 // Canales del ADS1115 (single-ended)
@@ -20,8 +20,13 @@ constexpr float NTC_R25_OHM     = 10000.0f; // resistencia nominal a 25 °C
 constexpr float NTC_BETA        = 3950.0f;  // coeficiente Beta (25/85 °C)
 
 // ── TWAI / CAN bus ──────────────────────────────────────────────────────────
-constexpr int      TWAI_TX_PIN        = 47;
-constexpr int      TWAI_RX_PIN        = 48;
+constexpr bool CAN_BUS_ENABLED = true;
+// En true mientras se prueba esta placa sola en el banco (sin otro nodo que
+// haga ACK de cada trama). Pasar a false en cuanto haya un receptor real en
+// el bus, para volver a TWAI_MODE_NORMAL.
+constexpr bool CAN_NO_ACK_MODE = true;
+constexpr int      TWAI_TX_PIN        = 48;
+constexpr int      TWAI_RX_PIN        = 47;
 // ID propio para este nodo (sonda lambda narrowband + calentador). No colisiona
 // con los IDs ya usados en el repo Telemetria: 0x100 (CHT hacia AIM) y 0x200
 // (RPM/marcha/TPS/CHT, recibido por AimCanBus en el ESP32 principal).
